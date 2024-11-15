@@ -1,0 +1,286 @@
+import React, { useState } from 'react';
+import { AlertCircle, Send, RotateCcw } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
+const questionBank = {
+  career: {
+    goal: [
+      "What role do you see yourself in 2-3 years from now?",
+      "How would this career move align with your long-term aspirations?",
+      "What skills or experiences would make you feel truly successful in your career?",
+      "What impact do you want to make in your industry?",
+      "How would this career change affect your work-life balance?",
+      "What kind of leader or professional do you aspire to become?"
+    ],
+    reality: [
+      "What aspects of your current role energize you the most?",
+      "Where do you feel stuck in your career progression?",
+      "What feedback have you received about your strengths and growth areas?",
+      "How does your current role utilize your key strengths?",
+      "What opportunities for growth exist in your current position?",
+      "What's holding you back from making this career move?"
+    ],
+    options: [
+      "What alternative career paths have you considered?",
+      "How could you test this career direction before fully committing?",
+      "What skills could you develop in your current role to prepare for this move?",
+      "Who in your network could help you explore these options?",
+      "What would an experimental first step look like?",
+      "How could you create opportunities in your current role?"
+    ],
+    will: [
+      "What's your first step toward this career goal?",
+      "How will you maintain momentum when things get challenging?",
+      "Who could mentor you on this career journey?",
+      "What boundaries need to be set to prioritize this goal?",
+      "How will you measure progress along the way?",
+      "What support will you need from your manager or team?"
+    ]
+  },
+  skills: {
+    goal: [
+      "What skill would be most transformative for your work right now?",
+      "How would mastering this skill change your effectiveness?",
+      "What level of expertise are you aiming for?",
+      "How will this skill complement your existing strengths?",
+      "What opportunities would this new skill unlock?",
+      "How will this skill make you more valuable to your team?"
+    ],
+    reality: [
+      "What's your current comfort level with this skill?",
+      "Where do you notice this skill gap impacting your work?",
+      "What self-study have you already attempted?",
+      "Who around you excels at this skill?",
+      "What's been your biggest challenge in learning this so far?",
+      "What resources are available to you for learning?"
+    ],
+    options: [
+      "What different learning approaches could you try?",
+      "How could you practice this skill in low-stakes situations?",
+      "What projects could serve as learning opportunities?",
+      "Who could you pair with to accelerate learning?",
+      "What creative ways could you make learning this more engaging?",
+      "How could you break this skill into smaller, manageable pieces?"
+    ],
+    will: [
+      "What specific practice routine will you commit to?",
+      "How will you protect time for skill development?",
+      "What accountability system will keep you on track?",
+      "How will you celebrate progress milestones?",
+      "What might derail your learning, and how will you prevent it?",
+      "Who will you share your learning journey with?"
+    ]
+  },
+  projects: {
+    goal: [
+      "What would make this project a breakthrough success?",
+      "How will this project impact key stakeholders?",
+      "What would exceed expectations for this deliverable?",
+      "How does this project align with broader objectives?",
+      "What legacy do you want this project to leave?",
+      "What innovation could you bring to this project?"
+    ],
+    reality: [
+      "What's the current health of the project?",
+      "Where are the biggest risks or uncertainties?",
+      "What's consuming most of the team's energy?",
+      "What early warning signs are you noticing?",
+      "Where is there misalignment among stakeholders?",
+      "What's working well that could be amplified?"
+    ],
+    options: [
+      "What if you approached this project differently?",
+      "How could you reduce complexity without sacrificing impact?",
+      "What if resources weren't a constraint?",
+      "How could you leverage the team's strengths differently?",
+      "What could you learn from similar projects?",
+      "How could you make this project more innovative?"
+    ],
+    will: [
+      "What bold action could shift the project's trajectory?",
+      "How will you energize the team around next steps?",
+      "What tough conversations need to happen?",
+      "How will you maintain momentum?",
+      "What support does the team need to succeed?",
+      "How will you celebrate wins along the way?"
+    ]
+  },
+  relationships: {
+    goal: [
+      "What would an ideal working relationship look like?",
+      "How do you want others to experience collaborating with you?",
+      "What patterns would you like to change in this relationship?",
+      "What mutual wins could you create?",
+      "How could this relationship evolve to benefit both parties?",
+      "What boundaries would make this relationship healthier?"
+    ],
+    reality: [
+      "What triggers tension in this relationship?",
+      "Where do your working styles clash?",
+      "What assumptions might be affecting the dynamic?",
+      "What's left unsaid in your interactions?",
+      "When does collaboration flow naturally?",
+      "What efforts to improve the relationship have you tried?"
+    ],
+    options: [
+      "What would happen if you approached this relationship differently?",
+      "How could you make it easier for them to work with you?",
+      "What new agreements could you propose?",
+      "How could you reframe this challenge as an opportunity?",
+      "What strengths could each person bring to the solution?",
+      "What small experiment could improve the dynamic?"
+    ],
+    will: [
+      "What conversation would begin shifting this relationship?",
+      "How will you show up differently tomorrow?",
+      "What new habit would support this relationship?",
+      "How will you respond when old patterns emerge?",
+      "What feedback will you request to check progress?",
+      "How will you maintain momentum in improving this dynamic?"
+    ]
+  }
+};
+
+const topicKeywords = {
+  career: ['job', 'career', 'promotion', 'role', 'professional', 'work', 'position', 'industry'],
+  skills: ['learn', 'skill', 'training', 'develop', 'improve', 'growth', 'expertise', 'knowledge'],
+  projects: ['project', 'deadline', 'task', 'initiative', 'launch', 'deliver', 'stakeholder', 'milestone'],
+  relationships: ['team', 'colleague', 'relationship', 'conflict', 'communication', 'collaborate', 'dynamic', 'interact']
+};
+
+const CoachingAssistant = () => {
+  const [situation, setSituation] = useState('');
+  const [questions, setQuestions] = useState([]);
+  const [topic, setTopic] = useState('');
+  const [stage, setStage] = useState('');
+
+  const detectTopic = (text) => {
+    const lowercaseText = text.toLowerCase();
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+      if (keywords.some(keyword => lowercaseText.includes(keyword))) {
+        return topic;
+      }
+    }
+    return 'career'; // Default topic
+  };
+
+  const detectStage = (text) => {
+    const stageIndicators = {
+      goal: ['want to', 'aim', 'goal', 'achieve', 'aspire', 'future', 'hope'],
+      reality: ['currently', 'right now', 'situation', 'facing', 'present', 'struggling'],
+      options: ['could', 'might', 'possible', 'alternative', 'consider', 'maybe'],
+      will: ['will', 'plan', 'next step', 'action', 'commit', 'going to']
+    };
+
+    const lowercaseText = text.toLowerCase();
+    for (const [stage, indicators] of Object.entries(stageIndicators)) {
+      if (indicators.some(indicator => lowercaseText.includes(indicator))) {
+        return stage;
+      }
+    }
+    return 'goal'; // Default stage
+  };
+
+  const generateQuestions = () => {
+    if (!situation.trim()) return;
+
+    const detectedTopic = detectTopic(situation);
+    const detectedStage = detectStage(situation);
+    setTopic(detectedTopic);
+    setStage(detectedStage);
+
+    const nextStage = {
+      goal: 'reality',
+      reality: 'options',
+      options: 'will',
+      will: 'goal'
+    }[detectedStage];
+
+    // Get current stage questions
+    const currentStageQuestions = [...questionBank[detectedTopic][detectedStage]];
+    // Get next stage questions for follow-ups
+    const nextStageQuestions = [...questionBank[detectedTopic][nextStage]];
+
+    // Select random questions without duplicates
+    const selectedQuestions = [];
+    const questionCount = 3;
+
+    for (let i = 0; i < questionCount; i++) {
+      const randomIndex = Math.floor(Math.random() * currentStageQuestions.length);
+      const followUpIndex = Math.floor(Math.random() * nextStageQuestions.length);
+      
+      selectedQuestions.push({
+        question: currentStageQuestions[randomIndex],
+        explanation: `This question explores the ${detectedStage.toUpperCase()} stage, focusing on your ${detectedTopic} context.`,
+        followUp: nextStageQuestions[followUpIndex]
+      });
+
+      // Remove selected questions to avoid duplicates
+      currentStageQuestions.splice(randomIndex, 1);
+      nextStageQuestions.splice(followUpIndex, 1);
+    }
+
+    setQuestions(selectedQuestions);
+  };
+
+  return (
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle>AI Coaching Assistant</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <textarea
+            value={situation}
+            onChange={(e) => setSituation(e.target.value)}
+            placeholder="Describe your situation... (e.g., 'I want to improve my leadership skills' or 'I'm struggling with a difficult project')"
+            className="w-full h-32 p-2 border rounded-md"
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={generateQuestions}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            >
+              <Send className="w-4 h-4" />
+              Generate Questions
+            </button>
+            <button
+              onClick={() => {
+                setSituation('');
+                setQuestions([]);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </button>
+          </div>
+        </div>
+
+        {questions.length > 0 && (
+          <div className="space-y-4">
+            <Alert>
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>
+                Coaching focus: {topic} / Stage: {stage.toUpperCase()}
+              </AlertDescription>
+            </Alert>
+            
+            {questions.map((item, index) => (
+              <Card key={index} className="p-4">
+                <h3 className="font-bold text-lg mb-2">{item.question}</h3>
+                <p className="text-gray-600 text-sm mb-2">{item.explanation}</p>
+                <p className="text-sm text-blue-600">
+                  Potential follow-up: {item.followUp}
+                </p>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default CoachingAssistant;
